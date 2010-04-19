@@ -294,6 +294,7 @@
                     <token key="BUILD_VERSION" value="${BUILD_VERSION}"/>
                 </replacetokens>
             </filterchain>
+            <fileset dir="${SRC_DIR}" includes="event/__requires__.js" />
             <fileset dir="${SRC_DIR}" includes="event/__global__.js" />
             <fileset dir="${SRC_DIR}" includes="common/intro.js" />
             <fileset dir="${SRC_DIR}" includes="common/__extend__.js" />
@@ -308,6 +309,7 @@
             <fileset dir="${SRC_DIR}" includes="event/eventexception.js" />
             <fileset dir="${SRC_DIR}" includes="event/documentevent.js" />
             <fileset dir="${SRC_DIR}" includes="common/outro.js" />
+            <fileset dir="${SRC_DIR}" includes="event/__exports__.js" />
         </concat>
         <echo message="Finished Building ${EVENT_DIST}"/>
         <echo message=""/>
