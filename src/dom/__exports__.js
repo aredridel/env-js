@@ -1,4 +1,4 @@
-if(require && exports) {
+if(typeof require === 'function') {
     exports.Attr = Attr;
     exports.CDATASection = CDATASection;
     exports.CharacterData = CharacterData;

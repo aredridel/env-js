@@ -7,7 +7,7 @@
  * This file simply provides the global definitions we need to
  * be able to correctly implement to core browser DOM Event interfaces.
  */
-if(require && exports) {
+if(typeof require === 'function') {
     exports.Event = Event;
     exports.MouseEvent = MouseEvent;
     exports.UIEvent = UIEvent;

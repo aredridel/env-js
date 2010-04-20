@@ -1,4 +1,4 @@
-if(require && exports) {
+if(typeof require === 'function') {
     var DOM = require('dom');
     var Attr = DOM.Attr;
     var CDATASection = DOM.CDATASection;
