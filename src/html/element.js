@@ -5,6 +5,7 @@
 HTMLElement = function(ownerDocument) {
     Element.apply(this, arguments);
 };
+
 HTMLElement.prototype = new Element();
 //TODO: Not sure where HTMLEvents belongs in the chain
 //      but putting it here satisfies a lowest common
@@ -165,61 +166,54 @@ __extend__(HTMLElement.prototype, {
     },
 
     /**
-     * Named Element Support
+     * setAttribute use a dispatch table that other tags can set to
+     *  "listen" to various values being set.  The dispatch table
+     * and registration functions are at the end of the file.
+     *
+     *
      */
 
-    /**
-     * Not all children of a form are named elements
-     * returns the parent form element or null if
-     * there is no parent form or if not a named element
-     */
-    _isFormNamedElement: function(node) {
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            switch (node.nodeName.toLowerCase()) {
-            case 'button':
-            case 'fieldset':
-            case 'input':
-            case 'keygen':
-            case 'select':
-            case 'output':
-            case 'select':
-            case 'textarea':
-                return true;
-            }
-        }
-        return false;
-    },
-    _updateFormForNamedElement: function() {
-        if (this._isFormNamedElement(this)) {
-            if (this.form) {
-                // to check for ID or NAME attribute too
-                // not, then nothing to do
-                this.form._updateElements();
-            }
-        }
-    },
     setAttribute: function(name, value) {
         var result = Element.prototype.setAttribute.apply(this, arguments);
         this.ownerDocument._addNamedMap(this);
-        this._updateFormForNamedElement();
-        return result;
+        var tagname = this.tagName;
+        var callback = HTMLElement.getAttributeCallback('set', tagname, name);
+        if (callback) {
+            callback(this, value);
+        }
     },
     setAttributeNS: function(namespaceURI, name, value) {
         var result = Element.prototype.setAttributeNS.apply(this, arguments);
         this.ownerDocument._addNamedMap(this);
-        this._updateFormForNamedElement();
+
+        var tagname = this.tagName;
+        var callback = HTMLElement.getAttributeCallback('set', tagname, name);
+        if (callback) {
+            callback(this, value);
+        }
+
         return result;
     },
     setAttributeNode: function(newnode) {
         var result = Element.prototype.setAttributeNode.apply(this, arguments);
         this.ownerDocument._addNamedMap(this);
-        this._updateFormForNamedElement();
+
+        var tagname = this.tagName;
+        var callback = HTMLElement.getAttributeCallback('set', tagname, newnode.name);
+        if (callback) {
+            callback(this, node.value);
+        }
         return result;
     },
     setAttributeNodeNS: function(newnode) {
         var result = Element.prototype.setAttributeNodeNS.apply(this, arguments);
         this.ownerDocument._addNamedMap(this);
-        this._updateFormForNamedElement();
+
+        var tagname = this.tagName;
+        var callback = HTMLElement.getAttributeCallback('set', tagname, newnode.name);
+        if (callback) {
+            callback(this, node.value);
+        }
         return result;
     },
     removeAttribute: function(name) {
@@ -241,7 +235,6 @@ __extend__(HTMLElement.prototype, {
     importNode: function(othernode, deep) {
         var newnode = Element.prototype.importNode.apply(this, arguments);
         this.ownerDocument._addNamedMap(newnode);
-        this._updateFormForNamedElement(newnode);
         return newnode;
     },
 
@@ -250,7 +243,23 @@ __extend__(HTMLElement.prototype, {
         var newnode = Element.prototype.replaceNode.apply(this, arguments);
         this.ownerDocument._removeNamedMap(oldchild);
         this.ownerDocument._addNamedMap(newnode);
-        this._updateFormForNamedElement(newnode);
         return newnode;
     }
 });
+
+
+HTMLElement.attributeCallbacks = {};
+HTMLElement.registerSetAttribute = function(tag, attrib, callbackfn) {
+    HTMLElement.attributeCallbacks[tag + ':set:' + attrib] = callbackfn;
+};
+HTMLElement.registerRemoveAttribute = function(tag, attrib, callbackfn) {
+    HTMLElement.attributeCallbacks[tag + ':remove:' + attrib] = callbackfn;
+};
+
+/**
+ * This is really only useful internally
+ *
+ */
+HTMLElement.getAttributeCallback = function(type, tag, attrib) {
+    return HTMLElement.attributeCallbacks[tag + ':' + type + ':' + attrib] || null;
+};
